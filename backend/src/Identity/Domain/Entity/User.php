@@ -28,18 +28,41 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?DateTimeImmutable $emailVerifiedAt = null;
 
-    public function __construct(string $email, string $hashedPassword)
+    #[ORM\Column(length: 100)]
+    private string $firstName;
+
+    #[ORM\Column(length: 100)]
+    private string $lastName;
+
+    #[ORM\Column(length: 100, unique: true)]
+    private string $username;
+    public function __construct(string $email, string $hashedPassword, string $firstName , string $lastName , string $username )
     {
-        $userEmail=trim($email);
-        if($userEmail === '') {
+        $trimEmail=trim($email);
+        $trimFirstName=trim($firstName);
+        $trimLastName=trim($lastName);
+        $trimUsername=trim(strtolower($username));
+        if($trimEmail === '') {
             throw new \InvalidArgumentException('Email cannot be empty.');
         }
         if(trim($hashedPassword) === '') {
             throw new \InvalidArgumentException('Password cannot be empty.');
         }
+        if($trimFirstName === '') {
+            throw new \InvalidArgumentException('First name cannot be empty.');
+        }
+        if($trimLastName === '') {
+            throw new \InvalidArgumentException('Last name cannot be empty.');
+        }
+        if($trimUsername === '') {
+            throw new \InvalidArgumentException('Username cannot be empty.');
+        }
         $this->id = Uuid::v7();
-        $this->email = strtolower($userEmail);
+        $this->email = strtolower($trimEmail);
         $this->password = $hashedPassword;
+        $this->firstName = $trimFirstName;
+        $this->lastName = $trimLastName;
+        $this->username = $trimUsername;
     }
 
     public function getUserIdentifier(): string
@@ -66,7 +89,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->password;
     }
 
-    public function setPassword(string $hashedPassword): self
+    public function changePassword(string $hashedPassword): self
     {
         if (trim($hashedPassword) === '') {
             throw new \InvalidArgumentException('Password cannot be empty.');
@@ -98,5 +121,47 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getEmailVerifiedAt(): ?DateTimeImmutable
     {
         return $this->emailVerifiedAt;
+    }
+    public function getFirstName(): string
+    {
+        return $this->firstName;
+    }
+    public function changeFirstName(string $firstName): self
+    {
+        $trimFirstName=trim($firstName);
+        if($trimFirstName === '') {
+            throw new \InvalidArgumentException('First name cannot be empty.');
+        }
+        $this->firstName = $trimFirstName;
+        return $this;
+    }
+    public function getLastName(): string
+    {
+        return $this->lastName;
+    }
+    public function changeLastName(string $lastName): self
+    {
+        $trimLastName=trim($lastName);
+        if($trimLastName === '') {
+            throw new \InvalidArgumentException('Last name cannot be empty.');
+        }
+        $this->lastName = $trimLastName;
+        return $this;
+    }
+    public function getUsername(): string
+    {
+        return $this->username;
+    }
+    public function changeUsername(string $username): self
+    {
+        $trimmedUsername = trim(strtolower($username));
+        if ($trimmedUsername === '') {
+            throw new \InvalidArgumentException('Username cannot be empty.');
+        }
+        if ($this->username === $trimmedUsername) {
+            return $this;
+        }
+        $this->username = $trimmedUsername;
+        return $this;
     }
 }
